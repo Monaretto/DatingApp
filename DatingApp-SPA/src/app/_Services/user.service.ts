@@ -21,7 +21,19 @@ export class UserService {
   }
 
   updateUser(id: number, user: User) {
-    const url = this.baseUrl + 'users/' + id;
+    const url = this.baseUrl + "users/" + id;
     return this.Http.put(url, user);
+  }
+
+  setMainPhoto(userId: number, id: number) {
+    return this.Http.post(
+      this.baseUrl + "users/" + userId + "/photos/" + id + "/setMain",
+      {}
+    );
+  }
+
+  deletePhoto(userId: number, id: number)
+  {
+    return this.Http.delete(this.baseUrl + "users/" + userId + "/photos/" + id);
   }
 }
