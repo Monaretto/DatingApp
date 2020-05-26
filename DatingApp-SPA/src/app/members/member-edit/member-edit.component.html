@@ -37,13 +37,13 @@
               Last Active:
             </strong>
             <p>
-              {{ user.lastActive }}
+              {{ user.lastActive | timeAgo }}
             </p>
             <strong>
               Member Since:
             </strong>
             <p>
-              {{ user.created }}
+              {{ user.created | date: 'mediumDate' }}
             </p>
           </div>
           <div class="card-footer">
