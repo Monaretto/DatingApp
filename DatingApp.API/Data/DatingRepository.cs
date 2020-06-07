@@ -22,6 +22,22 @@ namespace DatingApp.API.Data
              _context.Remove(entity);
          }
 
+         private async Task<IEnumerable<int>> GetUserLikes(int id, bool likes)
+         {
+             var user = await _context.Users
+                .Include(x => x.Likers)
+                .Include(x => x.Likees)
+                .FirstOrDefaultAsync(u => u.Id == id);
+
+                if(likes)
+                {
+                    return user.Likers.Where(u => u.LikeeId == id).Select(i => i.LikerId);
+                }
+                else{
+                    return user.Likees.Where(u => u.LikerId == id).Select(i => i.LikeeId);
+                }
+         }
+
          public async Task<bool> SaveAll(){
 
              return await _context.SaveChangesAsync() > 0;
@@ -34,6 +50,18 @@ namespace DatingApp.API.Data
             users = users.Where(u => u.Id != userParams.userId);
 
             users = users.Where(u => u.Gender == userParams.Gender);
+
+            if (userParams.Likers)
+            {
+                var userLikers = await GetUserLikes(userParams.userId, userParams.Likers);
+                users = users.Where(u => userLikers.Contains(u.Id));
+            }
+
+            if (userParams.Likees)
+            {
+                var userLikees = await GetUserLikes(userParams.userId, userParams.Likers);
+                users= users.Where(u => userLikees.Contains(u.Id));
+            }
 
             if (userParams.MinAge != 18 || userParams.MaxAge != 99)
             {
@@ -77,6 +105,12 @@ namespace DatingApp.API.Data
                 .FirstOrDefaultAsync(p => p.IsMain);
 
             return photo;
+        }
+
+        public async Task<Like> GetLike(int userId, int recipientId)
+        {
+            return await _context.Likes
+                .FirstOrDefaultAsync(u => u.LikerId == userId && u.LikeeId == recipientId);
         }
     }
 }

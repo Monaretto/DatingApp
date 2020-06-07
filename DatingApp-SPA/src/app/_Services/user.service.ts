@@ -3,8 +3,8 @@ import { environment } from "../../environments/environment";
 import { HttpClient, HttpHeaders, HttpParams } from "@angular/common/http";
 import { Observable } from "rxjs";
 import { User, UserForUpdateDTO } from "../_Models/user";
-import { PaginatedResult } from '../_Models/pagination';
-import { map } from 'rxjs/operators';
+import { PaginatedResult } from "../_Models/pagination";
+import { map } from "rxjs/operators";
 
 @Injectable({
   providedIn: "root",
@@ -14,30 +14,48 @@ export class UserService {
 
   constructor(private Http: HttpClient) {}
 
-  getUsers(page?, itemsPerPage?, userParams?): Observable<PaginatedResult<User[]>> {
-    const paginatedResult: PaginatedResult<User[]> = new PaginatedResult<User[]>();
+  getUsers(
+    page?,
+    itemsPerPage?,
+    userParams?,
+    likesParam?
+  ): Observable<PaginatedResult<User[]>> {
+    const paginatedResult: PaginatedResult<User[]> = new PaginatedResult<
+      User[]
+    >();
 
     let params = new HttpParams();
 
     if (page && itemsPerPage) {
-      params = params.append('pagenumber', page);
-      params = params.append('pageSize', itemsPerPage);
+      params = params.append("pagenumber", page);
+      params = params.append("pageSize", itemsPerPage);
     }
 
     if (userParams) {
-      params = params.append('minAge', userParams.minAge);
-      params = params.append('maxAge', userParams.maxAge);
-      params = params.append('gender', userParams.gender);
-      params = params.append('orderBy', userParams.orderBy);
+      params = params.append("minAge", userParams.minAge);
+      params = params.append("maxAge", userParams.maxAge);
+      params = params.append("gender", userParams.gender);
+      params = params.append("orderBy", userParams.orderBy);
     }
 
-    return this.Http.get<User[]>(this.baseUrl + "users", {observe: 'response', params})
-    .pipe(
-      map(response => {
+    if (likesParam === "Likers") {
+      params = params.append("likers", "true");
+    }
+
+    if (likesParam === "Likees") {
+      params = params.append("likees", "true");
+    }
+
+    return this.Http.get<User[]>(this.baseUrl + "users", {
+      observe: "response",
+      params,
+    }).pipe(
+      map((response) => {
         paginatedResult.result = response.body;
-        if (response.headers.get('pagination'))
-        {
-          paginatedResult.pagination = JSON.parse(response.headers.get('pagination'));
+        if (response.headers.get("pagination")) {
+          paginatedResult.pagination = JSON.parse(
+            response.headers.get("pagination")
+          );
         }
         return paginatedResult;
       })
@@ -60,8 +78,14 @@ export class UserService {
     );
   }
 
-  deletePhoto(userId: number, id: number)
-  {
+  deletePhoto(userId: number, id: number) {
     return this.Http.delete(this.baseUrl + "users/" + userId + "/photos/" + id);
+  }
+
+  sendLike(id: number, recipientId: number) {
+    return this.Http.post(
+      this.baseUrl + "users/" + id + "/like/" + recipientId,
+      {}
+    );
   }
 }
