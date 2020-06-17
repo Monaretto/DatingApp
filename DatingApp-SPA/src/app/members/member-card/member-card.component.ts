@@ -25,6 +25,6 @@ export class MemberCardComponent implements OnInit {
     }, error => {
       this.alertify.error(error);
     });
-    )
+
   }
 }
